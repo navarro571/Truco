@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 887f5c902758af447ac068eac5e380d1, type: 3}
+  m_Name: 2-Copa
+  m_EditorClassIdentifier: 
+  Imagen: {fileID: 164382765721154662, guid: df271b20ca3e30440a2f1ef0b44d387a, type: 3}
+  Tipo: 3
+  Numero: 2
+  Mata: 0
+  Valor: 9
+  PosiblePieza: 1
+  ValorPieza: 19
+  ValorEnvido: 2
+  ValorEnvidoPieza: 30
