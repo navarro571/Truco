@@ -11,7 +11,8 @@ namespace Assets.Scripts.Interfaces
     {
         bool MiTurno { get; set; }
         Transform CartaPosicionFinal { get; set; }
-        void ValidarCartas();
+        bool ValidarCanto();
+        void Reset();
         void CartaJugada(Carta carta);
     }
 }

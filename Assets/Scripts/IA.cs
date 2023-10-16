@@ -11,15 +11,18 @@ public class IA : MonoBehaviour, IJugador
     public GameObject cartasGameObject;
     public List<Carta> cartasDisponibles;
     public Carta[] cartas;
-    private GameController gameController;
-
     public bool MiTurno { get; set; }
     public Transform CartaPosicionFinal { get; set; }
+    public bool Flor { get { return _flor; } }
+
+    private GameController _gameController;
+    private bool _validarCanto;
+    private bool _flor;
 
     private void Awake()
     {
-        gameController = FindObjectOfType<GameController>();
-        CartaPosicionFinal = gameController.CartaPosicionBot;
+        _gameController = FindObjectOfType<GameController>();
+        CartaPosicionFinal = _gameController.CartaPosicionBot;
     }
 
     private void OnEnable()
@@ -35,22 +38,28 @@ public class IA : MonoBehaviour, IJugador
         //Desubscribir a evento inbound
         //Desubscribir a evento turno
     }
+    public void Reset()
+    {
+        _validarCanto = true;
+        _flor = false;
+    }
 
     public void DarCartas(GameObject cartas)
     {
         this.cartasGameObject = cartas;
         this.cartas = cartas.GetComponentsInChildren<Carta>();
         this.cartasDisponibles = new List<Carta>(cartas.GetComponentsInChildren<Carta>());
-        ((IJugador)this).ValidarCartas();
     }
 
-    void IJugador.ValidarCartas()
+    bool IJugador.ValidarCanto()
     {
+        _validarCanto = false;
         InfoCartas cartaInfo = HelperFunctions.ObtenerPiezas(cartas);
         if (cartaInfo.flor) {
             Debug.Log("FLOR");
             IAAction.Invoke(eTipoAccion.RESPUESTA, eEstrategia.florCanto);
         }
+        return cartaInfo.flor;
     }
 
     private void CambioTurnoEvent(int jugadorTurnoID)
@@ -58,6 +67,11 @@ public class IA : MonoBehaviour, IJugador
         if (jugadorTurnoID == gameObject.GetInstanceID())
         {
             Debug.Log("TURNO IA");
+            if (_validarCanto)
+            {
+                _flor = ((IJugador)this).ValidarCanto();
+            }
+            //IAAction.Invoke(eTipoAccion.RESPUESTA, eEstrategia.Envido);
             JugarCarta(UnityEngine.Random.Range(0, cartasDisponibles.Count - 1));
         }
     }
@@ -77,5 +91,50 @@ public class IA : MonoBehaviour, IJugador
         cartaAJugar.gameObject.transform.rotation = CartaPosicionFinal.rotation;
         CartaJugada(cartaAJugar);
         cartasDisponibles.Remove(cartaAJugar);
+    }
+
+    public bool AccionEntrante(eEstrategia tipoAccion)
+    {
+        bool flor = _flor;
+        if(_validarCanto)
+        {
+            _flor = ((IJugador)this).ValidarCanto();
+            flor = _flor;
+        }
+        if (flor)
+        {
+            return false;
+        } 
+        else
+        {
+            switch (tipoAccion)
+            {
+                case eEstrategia.flor:
+                    break;
+                case eEstrategia.florEnvido:
+                    break;
+                case eEstrategia.florResto:
+                    break;
+                case eEstrategia.Envido:
+                    return ValidarPosibleEnvido();
+                case eEstrategia.RealEnvido:
+                    break;
+                case eEstrategia.FaltaEnvido:
+                    break;
+                case eEstrategia.Truco:
+                    break;
+                case eEstrategia.Retruco:
+                    break;
+                case eEstrategia.ValeCuatro:
+                    break;
+            }
+            return false;
+        }
+        
+    }
+
+    private bool ValidarPosibleEnvido()
+    {
+        return true;
     }
 }

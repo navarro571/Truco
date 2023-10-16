@@ -50,6 +50,7 @@ public class GameController : MonoBehaviour
     public Transform CartaPosicionMuestraIzq;
 
     [Header("TEST FUNC")]
+    public bool IACartasVistas;
     public bool ForzarCartas;
     public CartaPlantilla MuestraForzada;
     public CartaPlantilla[] CartasForzadas;
@@ -179,7 +180,7 @@ public class GameController : MonoBehaviour
         return team2;
     }
 
-    private void IAAction (eTipoAccion tipoAccion, object Data)
+    private async void IAAction (eTipoAccion tipoAccion, object Data)
     {
         if(tipoAccion == eTipoAccion.SINRESPUESTA)
         {
@@ -203,6 +204,24 @@ public class GameController : MonoBehaviour
                 case eEstrategia.florResto:
                     break;
                 case eEstrategia.Envido:
+                    envidoPuntos += 2;
+                    Jugador jugadorComponent = JugadorObj.GetComponent<Jugador>();
+                    bool JugadorRespuesta = await jugadorComponent.AccionEntrante(estrategia);
+                    if (JugadorRespuesta)
+                    {
+                        int JugadorPuntos = HelperFunctions.Contar(cartasJugador);
+                        int IAPuntos = HelperFunctions.Contar(cartasIA);
+                        if (JugadorPuntos >= IAPuntos)
+                        {
+                            PuntosEquipoA += envidoPuntos;
+                        }
+                        else
+                        {
+                            PuntosEquipoB += envidoPuntos;
+                        }
+                    }
+                    else if (!jugadorComponent.Flor)
+                        PuntosEquipoA += envidoPuntos > 2 ? envidoPuntos : 1;
                     break;
                 case eEstrategia.RealEnvido:
                     break;
@@ -218,7 +237,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void PlayerAction(eTipoAccion tipoAccion, object Data)
+    private async void PlayerAction(eTipoAccion tipoAccion, object Data)
     {
         if (tipoAccion == eTipoAccion.SINRESPUESTA)
         {
@@ -242,7 +261,24 @@ public class GameController : MonoBehaviour
                 case eEstrategia.florResto:
                     break;
                 case eEstrategia.Envido:
-                    HelperFunctions.CalcularEnvido(cartasJugador, Muestra);
+                    envidoPuntos += 2;
+                    IA IAComponent = IAObj.GetComponent<IA>();
+                    bool IARespuesta = IAComponent.AccionEntrante(estrategia);
+                    if (IARespuesta)
+                    {
+                        int JugadorPuntos = HelperFunctions.Contar(cartasJugador);
+                        int IAPuntos = HelperFunctions.Contar(cartasIA);
+                        if(JugadorPuntos >= IAPuntos)
+                        {
+                            PuntosEquipoA += envidoPuntos;
+                        } else
+                        {
+                            PuntosEquipoB += envidoPuntos;
+                        }
+                    }
+                    else if(!IAComponent.Flor)
+                        PuntosEquipoA += envidoPuntos > 2 ? envidoPuntos : 1;
+
                     break;
                 case eEstrategia.RealEnvido:
                     break;
@@ -314,10 +350,12 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void RondaTerminada()
+    private void RondaTerminada()
     {
         ManoActualPuntosEquipoA = 0;
         ManoActualPuntosEquipoB = 0;
+        trucoNivel = 0;
+        envidoPuntos = 0;
         CartaLanzadaJugador = null;
         CartaLanzadaIA = null;
         provedor.Reset();
@@ -342,6 +380,8 @@ public class GameController : MonoBehaviour
         IA ia = IAObj.GetComponent<IA>();
         Transform areaJugador = JugadorObj.transform.Find("Area");
         Transform areaIA = ia.transform.Find("Area");
+        jugador.Reset();
+        ia.Reset();
 
         Destroy(jugador.cartasGameObject);
         jugador.cartasGameObject = null;
@@ -369,15 +409,20 @@ public class GameController : MonoBehaviour
                 carta.CartaPlantilla.Numero != 12;
 
             carta.Valor = carta.Pieza ? carta.CartaPlantilla.ValorPieza : carta.CartaPlantilla.Valor;
+            carta.ValorEnvido = carta.Pieza ? carta.CartaPlantilla.ValorEnvidoPieza : carta.CartaPlantilla.ValorEnvido;
+
              if (carta.CartaPlantilla.Numero == 12 &&
                 Muestra.CartaPlantilla.PosiblePieza &&
                 carta.CartaPlantilla.Tipo == Muestra.CartaPlantilla.Tipo)
+            {
                 carta.Valor = Muestra.CartaPlantilla.ValorPieza;
+                carta.ValorEnvido = Muestra.CartaPlantilla.ValorEnvidoPieza;
+            }
 
             if (CartasIA)
             {
                 carta.IACarta = true;
-                carta.Tapada = true;
+                carta.Tapada = !IACartasVistas;
             }
         }
 

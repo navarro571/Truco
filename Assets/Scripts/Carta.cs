@@ -31,6 +31,7 @@ public class Carta : MonoBehaviour
         }
     }
     public int Valor;
+    public int ValorEnvido;
     public bool Pieza;
     public bool esMuestra;
     public bool isDraggable;

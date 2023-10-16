@@ -3,6 +3,7 @@ using Assets.Scripts.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Jugador : MonoBehaviour, IJugador
@@ -10,14 +11,20 @@ public class Jugador : MonoBehaviour, IJugador
     public static event Action<eTipoAccion, object> PlayerAction;
     public GameObject cartasGameObject;
     public Carta[] cartas;
-    private GameController gameController;
     public bool MiTurno { get; set; }
     public Transform CartaPosicionFinal { get; set; }
+    public bool Flor { get { return _flor; } }
+
+    private GameController _gameController;
+    private PanelAcciones _panelAcciones;
+    private bool _validarCanto;
+    private bool _flor;
 
     private void Awake()
     {
-        gameController = FindObjectOfType<GameController>();
-        CartaPosicionFinal = gameController.CartaPosicionJugador;
+        _gameController = FindObjectOfType<GameController>();
+        _panelAcciones = FindObjectOfType<PanelAcciones>();
+        CartaPosicionFinal = _gameController.CartaPosicionJugador;
     }
 
     private void OnEnable()
@@ -34,21 +41,30 @@ public class Jugador : MonoBehaviour, IJugador
         //Desubscribir a evento turno
     }
 
+    public void Reset()
+    {
+        _validarCanto = true;
+        _flor = false;
+    }
+
     public void DarCartas(GameObject cartas)
     {
         this.cartasGameObject = cartas;
         this.cartas = cartas.GetComponentsInChildren<Carta>();
-        ((IJugador)this).ValidarCartas();
+        ((IJugador)this).ValidarCanto();
     }
 
-    void IJugador.ValidarCartas()
+    bool IJugador.ValidarCanto()
     {
+        _validarCanto = false;
         InfoCartas cartaInfo = HelperFunctions.ObtenerPiezas(cartas);
         if (cartaInfo.flor)
         {
             Debug.Log("FLOR");
             PlayerAction.Invoke(eTipoAccion.RESPUESTA, eEstrategia.florCanto);
         }
+
+        return cartaInfo.flor;
     }
 
     private void CambioTurnoEvent(int jugadorTurnoID) { 
@@ -61,6 +77,11 @@ public class Jugador : MonoBehaviour, IJugador
                 if(!carta.CartaJugada)
                     carta.isDraggable = true;
             }
+            if (_validarCanto)
+            {
+                _flor = ((IJugador)this).ValidarCanto();
+            }
+                
         } else {
             MiTurno = false;
             foreach (Carta carta in cartas)
@@ -81,4 +102,44 @@ public class Jugador : MonoBehaviour, IJugador
     }
 
     public void Accion(eEstrategia tipo) => PlayerAction?.Invoke(eTipoAccion.RESPUESTA, tipo);
+
+    public async Task<bool> AccionEntrante(eEstrategia tipoAccion)
+    {
+        bool flor = _flor;
+        if (_validarCanto)
+        {
+            _flor = ((IJugador)this).ValidarCanto();
+            flor = _flor;
+        }
+        if (flor)
+        {
+            return false;
+        }
+        else
+        {
+            switch (tipoAccion)
+            {
+                case eEstrategia.flor:
+                    break;
+                case eEstrategia.florEnvido:
+                    break;
+                case eEstrategia.florResto:
+                    break;
+                case eEstrategia.Envido:
+                    return await _panelAcciones.PanelRespuesta("Envido");
+                    break;
+                case eEstrategia.RealEnvido:
+                    break;
+                case eEstrategia.FaltaEnvido:
+                    break;
+                case eEstrategia.Truco:
+                    break;
+                case eEstrategia.Retruco:
+                    break;
+                case eEstrategia.ValeCuatro:
+                    break;
+            }
+            return false;
+        }
+    }
 }
