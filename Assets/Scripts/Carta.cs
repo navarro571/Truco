@@ -1,3 +1,4 @@
+using Assets.Scripts.Controllers;
 using Assets.Scripts.Interfaces;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,6 +45,7 @@ public class Carta : MonoBehaviour
     private Quaternion prevRot;
     private IJugador jugadorPadre;
     private GameController gameController;
+
     private void Awake()
     {
         jugadorPadre = GetComponentInParent<IJugador>();
@@ -53,6 +55,15 @@ public class Carta : MonoBehaviour
     private void Start()
     {
         isDraggable = !esMuestra && !IACarta && jugadorPadre.MiTurno;
+    }
+
+    private void OnEnable()
+    {
+        ActionController.OnWaitingStateChange += OnWaitingStateChange;
+    }
+    private void OnDisable()
+    {
+        ActionController.OnWaitingStateChange -= OnWaitingStateChange;
     }
 
     void OnMouseDown()
@@ -86,5 +97,10 @@ public class Carta : MonoBehaviour
             CartaJugada = true;
             jugadorPadre.CartaJugada(this);
         }
+    }
+
+    private void OnWaitingStateChange(bool currentState)
+    {
+        isDraggable = !currentState;
     }
 }

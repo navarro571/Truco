@@ -11,7 +11,7 @@ public enum eTipoAccion
     RESPUESTA
 }
 
-public enum eEstrategia
+public enum eAction
 {
     florCanto,
     flor,
@@ -49,6 +49,15 @@ public class GameController : MonoBehaviour
     public Transform CartaPosicionMuestraDer;
     public Transform CartaPosicionMuestraIzq;
 
+    [Header("JUGADOR")]
+    [SerializeField]
+    private GameObject JugadorObj;
+    private GameObject cartasJugador;
+    [Header("IA")]
+    [SerializeField]
+    private GameObject IAObj;
+    private GameObject cartasIA;
+
     [Header("TEST FUNC")]
     public bool IACartasVistas;
     public bool ForzarCartas;
@@ -61,14 +70,6 @@ public class GameController : MonoBehaviour
     public int PuntosEquipoA;
     public int PuntosEquipoB;
 
-    [Header("JUGADOR")]
-    [SerializeField]
-    private GameObject JugadorObj;
-    private GameObject cartasJugador;
-    [Header("IA")]
-    [SerializeField]
-    private GameObject IAObj;
-    private GameObject cartasIA;
     [SerializeField]
     private Carta CartaLanzadaJugador;
     private Carta CartaLanzadaIA;
@@ -79,11 +80,17 @@ public class GameController : MonoBehaviour
     [SerializeField]
     private int trucoNivel;
     [SerializeField]
+    private GameObject trucoPalabra;
+    [SerializeField]
     private int envidoPuntos;
+    [SerializeField]
+    private int florNivel;
+    [SerializeField]
+    private GameObject florPalabra;
 
     private Transform muestraPosition;
-    private ProvedorCarta provedor;
     private GameObject[] Equipos;
+    private ProvedorCarta provedor;
     private GameObject turno;
 
     private void Awake()
@@ -124,17 +131,30 @@ public class GameController : MonoBehaviour
 
     private void OnEnable()
     {
-        Jugador.PlayerAction += PlayerAction;
-        IA.IAAction += IAAction;
     }
 
     private void OnDisable()
     {
-        Jugador.PlayerAction -= PlayerAction;
-        IA.IAAction -= IAAction;
     }
 
     public Carta ObtenerMuestra() => Muestra;
+
+    public int ObtenerNivelTrucoActual() => trucoNivel;
+
+    public void SumarPuntosEquipoA(int puntos) => PuntosEquipoA += puntos;
+    public void SumarPuntosEquipoB(int puntos) => PuntosEquipoB += puntos;
+
+    public void JugarCarta(Carta carta, bool local)
+    {
+        if(local)
+        {
+            CartaLanzadaJugador = carta;
+        } else {
+            CartaLanzadaIA = carta;
+        }
+        CartasJugadas.Add(carta);
+        StartCoroutine(CartaJugada());
+    }
 
     private GameObject InicializarJugador()
     {
@@ -180,120 +200,6 @@ public class GameController : MonoBehaviour
         return team2;
     }
 
-    private async void IAAction (eTipoAccion tipoAccion, object Data)
-    {
-        if(tipoAccion == eTipoAccion.SINRESPUESTA)
-        {
-            CartaLanzadaIA = (Carta)Data;
-            CartasJugadas.Add((Carta)Data);
-            StartCoroutine(CartaJugada());
-        } 
-        else
-        {
-            eEstrategia estrategia = (eEstrategia)Data;
-
-            switch (estrategia)
-            {
-                case eEstrategia.florCanto:
-                    PuntosEquipoB += 3;
-                    break;
-                case eEstrategia.flor:
-                    break;
-                case eEstrategia.florEnvido:
-                    break;
-                case eEstrategia.florResto:
-                    break;
-                case eEstrategia.Envido:
-                    envidoPuntos += 2;
-                    Jugador jugadorComponent = JugadorObj.GetComponent<Jugador>();
-                    bool JugadorRespuesta = await jugadorComponent.AccionEntrante(estrategia);
-                    if (JugadorRespuesta)
-                    {
-                        int JugadorPuntos = HelperFunctions.Contar(cartasJugador);
-                        int IAPuntos = HelperFunctions.Contar(cartasIA);
-                        if (JugadorPuntos >= IAPuntos)
-                        {
-                            PuntosEquipoA += envidoPuntos;
-                        }
-                        else
-                        {
-                            PuntosEquipoB += envidoPuntos;
-                        }
-                    }
-                    else if (!jugadorComponent.Flor)
-                        PuntosEquipoA += envidoPuntos > 2 ? envidoPuntos : 1;
-                    break;
-                case eEstrategia.RealEnvido:
-                    break;
-                case eEstrategia.FaltaEnvido:
-                    break;
-                case eEstrategia.Truco:
-                    break;
-                case eEstrategia.Retruco:
-                    break;
-                case eEstrategia.ValeCuatro:
-                    break;
-            }
-        }
-    }
-
-    private async void PlayerAction(eTipoAccion tipoAccion, object Data)
-    {
-        if (tipoAccion == eTipoAccion.SINRESPUESTA)
-        {
-            CartaLanzadaJugador = (Carta)Data;
-            CartasJugadas.Add((Carta)Data);
-            StartCoroutine(CartaJugada());
-        }
-        else
-        {
-            eEstrategia estrategia = (eEstrategia)Data;
-
-            switch (estrategia)
-            {
-                case eEstrategia.florCanto:
-                    PuntosEquipoA += 3;
-                    break;
-                case eEstrategia.flor:
-                    break;
-                case eEstrategia.florEnvido:
-                    break;
-                case eEstrategia.florResto:
-                    break;
-                case eEstrategia.Envido:
-                    envidoPuntos += 2;
-                    IA IAComponent = IAObj.GetComponent<IA>();
-                    bool IARespuesta = IAComponent.AccionEntrante(estrategia);
-                    if (IARespuesta)
-                    {
-                        int JugadorPuntos = HelperFunctions.Contar(cartasJugador);
-                        int IAPuntos = HelperFunctions.Contar(cartasIA);
-                        if(JugadorPuntos >= IAPuntos)
-                        {
-                            PuntosEquipoA += envidoPuntos;
-                        } else
-                        {
-                            PuntosEquipoB += envidoPuntos;
-                        }
-                    }
-                    else if(!IAComponent.Flor)
-                        PuntosEquipoA += envidoPuntos > 2 ? envidoPuntos : 1;
-
-                    break;
-                case eEstrategia.RealEnvido:
-                    break;
-                case eEstrategia.FaltaEnvido:
-                    break;
-                case eEstrategia.Truco:
-                    break;
-                case eEstrategia.Retruco:
-                    break;
-                case eEstrategia.ValeCuatro:
-                    break;
-            }
-        }
-    }
-
     private IEnumerator CartaJugada()
     {
 
@@ -321,12 +227,20 @@ public class GameController : MonoBehaviour
 
             if (ManoActualPuntosEquipoA > 3 || ManoActualPuntosEquipoA == 2 && ManoActualPuntosEquipoB <= 1)
             {
-                ++PuntosEquipoA;
+                if (trucoNivel > 0)
+                    PuntosEquipoA += ++trucoNivel;
+                else
+                    ++PuntosEquipoA;
+
                 rondaTerminada = true;
             }
             else if (ManoActualPuntosEquipoB > 3 || ManoActualPuntosEquipoB == 2 && ManoActualPuntosEquipoA <= 1)
             {
-                ++PuntosEquipoB;
+                if(trucoNivel > 0)
+                    PuntosEquipoB += ++trucoNivel;
+                else
+                    ++PuntosEquipoB;
+
                 rondaTerminada = true;
             }
 

@@ -1,3 +1,4 @@
+using Assets.Scripts.Controllers;
 using Assets.Scripts.Interfaces;
 using Assets.Scripts.Utilities;
 using System;
@@ -7,7 +8,6 @@ using UnityEngine;
 
 public class IA : MonoBehaviour, IJugador
 {
-    public static event Action<eTipoAccion, object> IAAction;
     public GameObject cartasGameObject;
     public List<Carta> cartasDisponibles;
     public Carta[] cartas;
@@ -28,6 +28,7 @@ public class IA : MonoBehaviour, IJugador
     private void OnEnable()
     {
         GameController.CambioTurno += CambioTurnoEvent;
+        ActionController.OnAction += OnAction;
         //Subscribir a evento inbound
         //Subscribir a evento turno
     }
@@ -35,6 +36,7 @@ public class IA : MonoBehaviour, IJugador
     private void OnDisable()
     {
         GameController.CambioTurno -= CambioTurnoEvent;
+        ActionController.OnAction -= OnAction;
         //Desubscribir a evento inbound
         //Desubscribir a evento turno
     }
@@ -57,7 +59,7 @@ public class IA : MonoBehaviour, IJugador
         InfoCartas cartaInfo = HelperFunctions.ObtenerPiezas(cartas);
         if (cartaInfo.flor) {
             Debug.Log("FLOR");
-            IAAction.Invoke(eTipoAccion.RESPUESTA, eEstrategia.florCanto);
+            ActionController.Accion(gameObject, eAction.florCanto);
         }
         return cartaInfo.flor;
     }
@@ -71,15 +73,12 @@ public class IA : MonoBehaviour, IJugador
             {
                 _flor = ((IJugador)this).ValidarCanto();
             }
-            //IAAction.Invoke(eTipoAccion.RESPUESTA, eEstrategia.Envido);
+            //IAAction.Invoke(eTipoAccion.RESPUESTA, eAction.Envido);
             JugarCarta(UnityEngine.Random.Range(0, cartasDisponibles.Count - 1));
         }
     }
 
-    public void CartaJugada(Carta carta)
-    {
-        IAAction?.Invoke(eTipoAccion.SINRESPUESTA, carta);
-    }
+    public void CartaJugada(Carta carta) => _gameController.JugarCarta(carta, false);
 
     private void JugarCarta(int index)
     {
@@ -93,47 +92,91 @@ public class IA : MonoBehaviour, IJugador
         cartasDisponibles.Remove(cartaAJugar);
     }
 
-    public bool AccionEntrante(eEstrategia tipoAccion)
+    public void OnAction(GameObject gameObject, eAction tipoAccion)
     {
-        bool flor = _flor;
-        if(_validarCanto)
+        bool flor = false;
+        if (_validarCanto)
         {
             _flor = ((IJugador)this).ValidarCanto();
             flor = _flor;
         }
-        if (flor)
+        switch (tipoAccion)
         {
-            return false;
-        } 
-        else
-        {
-            switch (tipoAccion)
-            {
-                case eEstrategia.flor:
-                    break;
-                case eEstrategia.florEnvido:
-                    break;
-                case eEstrategia.florResto:
-                    break;
-                case eEstrategia.Envido:
-                    return ValidarPosibleEnvido();
-                case eEstrategia.RealEnvido:
-                    break;
-                case eEstrategia.FaltaEnvido:
-                    break;
-                case eEstrategia.Truco:
-                    break;
-                case eEstrategia.Retruco:
-                    break;
-                case eEstrategia.ValeCuatro:
-                    break;
-            }
-            return false;
+            case eAction.florCanto:
+                //si tiene flor entonces ver si se achica o va para delante
+                if (!flor) ActionController.Respuesta(gameObject, false);
+                break;
+            case eAction.flor:
+                break;
+            case eAction.florEnvido:
+                break;
+            case eAction.florResto:
+                break;
+            case eAction.Envido:
+                break;
+            case eAction.RealEnvido:
+                break;
+            case eAction.FaltaEnvido:
+                break;
+            case eAction.Truco:
+                ActionController.Respuesta(gameObject, ValidarPosibleTruco());
+                break;
+            case eAction.Retruco:
+                break;
+            case eAction.ValeCuatro:
+                break;
         }
-        
+        //bool flor = _flor;
+        //if(_validarCanto)
+        //{
+        //    _flor = ((IJugador)this).ValidarCanto();
+        //    flor = _flor;
+        //}
+        //if (flor)
+        //{
+        //    return false;
+        //} 
+        //else
+        //{
+        //    switch (tipoAccion)
+        //    {
+        //        case eAction.flor:
+        //            break;
+        //        case eAction.florEnvido:
+        //            break;
+        //        case eAction.florResto:
+        //            break;
+        //        case eAction.Envido:
+        //            return ValidarPosibleEnvido();
+        //        case eAction.RealEnvido:
+        //            break;
+        //        case eAction.FaltaEnvido:
+        //            break;
+        //        case eAction.Truco:
+        //            return ValidarPosibleTruco();
+        //        case eAction.Retruco:
+        //            return ValidarPosibleRetruco();
+        //        case eAction.ValeCuatro:
+        //            return ValidarPosibleTrucoValeCuatro();
+        //    }
+        //    return false;
+        //}
+
     }
 
     private bool ValidarPosibleEnvido()
+    {
+        return true;
+    }
+    private bool ValidarPosibleTruco()
+    {
+        return true;
+    }
+    private bool ValidarPosibleRetruco()
+    {
+        return true;
+    }
+    private bool ValidarPosibleTrucoValeCuatro()
     {
         return true;
     }

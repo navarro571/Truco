@@ -1,0 +1,22 @@
+﻿Cambios:
+Estructura de ActionController.
+Como se postea una Carta Jugada al GameObject.
+Validaciones en la UI y las cartas para que no esten disponibles en los waitings
+
+ActionController:
+La idea seria que action controller se encargue de los post de las actions y las respuestas que son respuestas de quiero o no quiero (para responder con otra accion hay que ejecutar Accion nuevamente)
+
+Acccion:
+esta agrega el estado de waiting y invoca el evento de accion enviando el GameObject que lo envia y la eAction ejecutada
+
+Respuesta:
+Valida la respuesta junto con la ultima accion(tupla almacenada) para sumar puntos a EquipoA o EquipoB
+
+watting:
+Hace esperar a todo el juego(local) hasta recivir una respuesta
+
+
+FALTA:
+Mover ActionController a MonoBehaviour y agregarlo al GameObject GameController
+Terminar con las acciones
+Comprobar que la nueva estructura solucione y abarque todo los casos.

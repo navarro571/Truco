@@ -1,3 +1,4 @@
+using Assets.Scripts.Controllers;
 using Assets.Scripts.Interfaces;
 using Assets.Scripts.Utilities;
 using System;
@@ -8,7 +9,6 @@ using UnityEngine;
 
 public class Jugador : MonoBehaviour, IJugador
 {
-    public static event Action<eTipoAccion, object> PlayerAction;
     public GameObject cartasGameObject;
     public Carta[] cartas;
     public bool MiTurno { get; set; }
@@ -30,6 +30,7 @@ public class Jugador : MonoBehaviour, IJugador
     private void OnEnable()
     {
         GameController.CambioTurno += CambioTurnoEvent;
+        ActionController.OnAction += OnAction;
         //Subscribir a evento inbound
         //Subscribir a evento turno
     }
@@ -37,6 +38,7 @@ public class Jugador : MonoBehaviour, IJugador
     private void OnDisable()
     {
         GameController.CambioTurno -= CambioTurnoEvent;
+        ActionController.OnAction -= OnAction;
         //Desubscribir a evento inbound
         //Desubscribir a evento turno
     }
@@ -61,7 +63,7 @@ public class Jugador : MonoBehaviour, IJugador
         if (cartaInfo.flor)
         {
             Debug.Log("FLOR");
-            PlayerAction.Invoke(eTipoAccion.RESPUESTA, eEstrategia.florCanto);
+            ActionController.Accion(gameObject, eAction.florCanto);
         }
 
         return cartaInfo.flor;
@@ -97,49 +99,81 @@ public class Jugador : MonoBehaviour, IJugador
         if(cartaExiste)
         {
             Debug.Log("Carta Jugada: " + carta.CartaPlantilla.Numero + " De " + carta.CartaPlantilla.Tipo.ToString());
-            PlayerAction?.Invoke(eTipoAccion.SINRESPUESTA, carta);
+            _gameController.JugarCarta(carta, true);
         }
     }
 
-    public void Accion(eEstrategia tipo) => PlayerAction?.Invoke(eTipoAccion.RESPUESTA, tipo);
+    public void Accion(eAction tipo) => ActionController.Accion(gameObject, tipo);
 
-    public async Task<bool> AccionEntrante(eEstrategia tipoAccion)
+    public async void OnAction(GameObject gameObject, eAction tipoAccion)
     {
-        bool flor = _flor;
+        bool flor = false;
         if (_validarCanto)
         {
             _flor = ((IJugador)this).ValidarCanto();
             flor = _flor;
         }
-        if (flor)
+        switch (tipoAccion)
         {
-            return false;
+            case eAction.florCanto:
+                //si tiene flor entonces ver si se achica o va para delante
+                if (!flor) ActionController.Respuesta(gameObject, false);
+                break;
+            case eAction.flor:
+                break;
+            case eAction.florEnvido:
+                break;
+            case eAction.florResto:
+                break;
+            case eAction.Envido:
+                break;
+            case eAction.RealEnvido:
+                break;
+            case eAction.FaltaEnvido:
+                break;
+            case eAction.Truco:
+                bool trucoRespuesta = await _panelAcciones.PanelRespuesta("Truco");
+                ActionController.Respuesta(gameObject, trucoRespuesta);
+                break;
+            case eAction.Retruco:
+                break;
+            case eAction.ValeCuatro:
+                break;
         }
-        else
-        {
-            switch (tipoAccion)
-            {
-                case eEstrategia.flor:
-                    break;
-                case eEstrategia.florEnvido:
-                    break;
-                case eEstrategia.florResto:
-                    break;
-                case eEstrategia.Envido:
-                    return await _panelAcciones.PanelRespuesta("Envido");
-                    break;
-                case eEstrategia.RealEnvido:
-                    break;
-                case eEstrategia.FaltaEnvido:
-                    break;
-                case eEstrategia.Truco:
-                    break;
-                case eEstrategia.Retruco:
-                    break;
-                case eEstrategia.ValeCuatro:
-                    break;
-            }
-            return false;
-        }
+        //bool flor = _flor;
+        //if (_validarCanto)
+        //{
+        //    _flor = ((IJugador)this).ValidarCanto();
+        //    flor = _flor;
+        //}
+        //if (flor)
+        //{
+        //    return false;
+        //}
+        //else
+        //{
+        //    switch (tipoAccion)
+        //    {
+        //        case eAction.flor:
+        //            break;
+        //        case eAction.florEnvido:
+        //            break;
+        //        case eAction.florResto:
+        //            break;
+        //        case eAction.Envido:
+        //            return await _panelAcciones.PanelRespuesta("Envido");
+        //        case eAction.RealEnvido:
+        //            break;
+        //        case eAction.FaltaEnvido:
+        //            break;
+        //        case eAction.Truco:
+        //            break;
+        //        case eAction.Retruco:
+        //            break;
+        //        case eAction.ValeCuatro:
+        //            break;
+        //    }
+        //    return false;
+        //}
     }
 }
