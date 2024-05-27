@@ -317,7 +317,7 @@ public class GameController : MonoBehaviour
         for (int i = 0; i < componentesCartas.Length; i++)
         {
             Carta carta = componentesCartas[i];
-            carta.CartaPlantilla = ForzarCartas ? CartasForzadas[i] : provedor.ObtenerCarta();
+            carta.CartaPlantilla = ForzarCartas && CartasIA == false ? CartasForzadas[i] : provedor.ObtenerCarta();
             carta.Pieza = carta.CartaPlantilla.PosiblePieza &&
                 carta.CartaPlantilla.Tipo == Muestra.CartaPlantilla.Tipo &&
                 carta.CartaPlantilla.Numero != 12;

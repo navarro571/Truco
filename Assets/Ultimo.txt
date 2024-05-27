@@ -17,6 +17,5 @@ Hace esperar a todo el juego(local) hasta recivir una respuesta
 
 
 FALTA:
-Mover ActionController a MonoBehaviour y agregarlo al GameObject GameController
 Terminar con las acciones
 Comprobar que la nueva estructura solucione y abarque todo los casos.

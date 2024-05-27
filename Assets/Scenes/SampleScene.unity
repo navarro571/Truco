@@ -1185,6 +1185,7 @@ GameObject:
   - component: {fileID: 736463192}
   - component: {fileID: 736463191}
   - component: {fileID: 736463193}
+  - component: {fileID: 736463194}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -1256,8 +1257,10 @@ MonoBehaviour:
   CartaPosicionJugador: {fileID: 1158686564}
   CartaPosicionMuestraDer: {fileID: 1201130598}
   CartaPosicionMuestraIzq: {fileID: 1341845512}
+  JugadorObj: {fileID: 0}
+  IAObj: {fileID: 0}
   IACartasVistas: 1
-  ForzarCartas: 0
+  ForzarCartas: 1
   MuestraForzada: {fileID: 11400000, guid: a28abef4631f51b40bacdee640bb626a, type: 2}
   CartasForzadas:
   - {fileID: 11400000, guid: c769c3d297010184f9926ed560c39c89, type: 2}
@@ -1267,13 +1270,14 @@ MonoBehaviour:
   ManoActualPuntosEquipoB: 0
   PuntosEquipoA: 0
   PuntosEquipoB: 0
-  JugadorObj: {fileID: 0}
-  IAObj: {fileID: 0}
   CartaLanzadaJugador: {fileID: 0}
   CartasJugadas: []
   Muestra: {fileID: 0}
   trucoNivel: 0
+  trucoPalabra: {fileID: 0}
   envidoPuntos: 0
+  florNivel: 0
+  florPalabra: {fileID: 0}
 --- !u!4 &736463192
 Transform:
   m_ObjectHideFlags: 0
@@ -1348,6 +1352,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 909bd2806f42736498e8eb1dbe894035, type: 2}
   - {fileID: 11400000, guid: 588ca569567529840b046caf8634287c, type: 2}
   CartasUsadas: []
+--- !u!114 &736463194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 736463190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75aa440bfd9369f4d924abc22290bd20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &747505492
 GameObject:
   m_ObjectHideFlags: 0
